@@ -2,7 +2,6 @@ package com.proyectoIA.springia.service;
 
 import com.proyectoIA.springia.dto.CrearCursoRequest;
 import com.proyectoIA.springia.dto.CrearEstudianteRequest;
-import com.proyectoIA.springia.dto.CursoDto;
 import com.proyectoIA.springia.dto.EstudianteDto;
 import com.proyectoIA.springia.dto.FiltroEstudianteRequest;
 import com.proyectoIA.springia.dto.SetearNotaRequest;
@@ -141,18 +140,6 @@ public class InstitutoServiceImpl implements InstitutoService {
         return obtenerEstudiantesFiltrados(filtro);
     }
 
-    @Override
-    public List<CursoDto> obtenerCursosPorTema(String tema) {
-        List<Curso> cursos = cursoRepository.findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCaseOrDocenteContainingIgnoreCase(
-                tema, tema, tema);
-        return cursos.stream().map(this::convertirCursoADto).toList();
-    }
-
-    @Tool(name = "obtenerCursosPorTema", description = "Devuelve cursos relacionados a un tema/palabra clave en nombre, descripción o docente")
-    public List<CursoDto> toolObtenerCursosPorTema(@ToolParam(name = "tema", description = "Tema o palabra clave para buscar cursos") String tema) {
-        return obtenerCursosPorTema(tema);
-    }
-
     /**
      * Convierte una entidad Estudiante a EstudianteDto
      */
@@ -170,18 +157,6 @@ public class InstitutoServiceImpl implements InstitutoService {
                 estudiante.getPais(),
                 estudiante.getEstado().toString(),
                 estudiante.getFechaInscripcion()
-        );
-    }
-
-    private CursoDto convertirCursoADto(Curso curso) {
-        return new CursoDto(
-                curso.getId(),
-                curso.getNombre(),
-                curso.getHorasTotales(),
-                curso.getDocente(),
-                curso.getDescripcion(),
-                curso.getFechaInicio(),
-                curso.getFechaFin()
         );
     }
 }

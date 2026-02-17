@@ -9,8 +9,6 @@ import java.util.List;
 @Repository
 public interface CursoRepository extends JpaRepository<Curso, Long> {
     List<Curso> findByNombreContainingIgnoreCase(String nombre);
-
-    // Buscar por nombre, descripción o docente
-    List<Curso> findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCaseOrDocenteContainingIgnoreCase(
-            String nombre, String descripcion, String docente);
 }
+
+

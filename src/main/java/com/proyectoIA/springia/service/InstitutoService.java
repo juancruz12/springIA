@@ -16,5 +16,5 @@ public interface InstitutoService {
     Curso crearCurso(CrearCursoRequest request);
     Evaluacion setearNota(SetearNotaRequest request);
     List<EstudianteDto> obtenerEstudiantesFiltrados(FiltroEstudianteRequest filtro);
-    List<com.proyectoIA.springia.dto.CursoDto> obtenerCursosPorTema(String tema);
 }
+
