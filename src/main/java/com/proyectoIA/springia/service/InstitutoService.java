@@ -1,0 +1,20 @@
+package com.proyectoIA.springia.service;
+
+import com.proyectoIA.springia.dto.CrearCursoRequest;
+import com.proyectoIA.springia.dto.CrearEstudianteRequest;
+import com.proyectoIA.springia.dto.EstudianteDto;
+import com.proyectoIA.springia.dto.FiltroEstudianteRequest;
+import com.proyectoIA.springia.dto.SetearNotaRequest;
+import com.proyectoIA.springia.entities.Curso;
+import com.proyectoIA.springia.entities.Estudiante;
+import com.proyectoIA.springia.entities.Evaluacion;
+
+import java.util.List;
+
+public interface InstitutoService {
+    Estudiante crearEstudiante(CrearEstudianteRequest request);
+    Curso crearCurso(CrearCursoRequest request);
+    Evaluacion setearNota(SetearNotaRequest request);
+    List<EstudianteDto> obtenerEstudiantesFiltrados(FiltroEstudianteRequest filtro);
+    List<com.proyectoIA.springia.dto.CursoDto> obtenerCursosPorTema(String tema);
+}
