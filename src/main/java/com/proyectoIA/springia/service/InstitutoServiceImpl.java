@@ -1,10 +1,6 @@
 package com.proyectoIA.springia.service;
 
-import com.proyectoIA.springia.dto.CrearCursoRequest;
-import com.proyectoIA.springia.dto.CrearEstudianteRequest;
-import com.proyectoIA.springia.dto.EstudianteDto;
-import com.proyectoIA.springia.dto.FiltroEstudianteRequest;
-import com.proyectoIA.springia.dto.SetearNotaRequest;
+import com.proyectoIA.springia.dto.*;
 import com.proyectoIA.springia.entities.Curso;
 import com.proyectoIA.springia.entities.Estudiante;
 import com.proyectoIA.springia.entities.Evaluacion;
@@ -14,24 +10,35 @@ import com.proyectoIA.springia.repository.EstudianteRepository;
 import com.proyectoIA.springia.repository.EvaluacionRepository;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Service
+@EnableAsync
 public class InstitutoServiceImpl implements InstitutoService {
 
     private final EstudianteRepository estudianteRepository;
     private final CursoRepository cursoRepository;
     private final EvaluacionRepository evaluacionRepository;
+    private final WebClient webClient;
 
     public InstitutoServiceImpl(EstudianteRepository estudianteRepository,
-                               CursoRepository cursoRepository,
-                               EvaluacionRepository evaluacionRepository) {
+                                CursoRepository cursoRepository,
+                                EvaluacionRepository evaluacionRepository,
+                                @Value("${vectoresIA.api}") String apiUrl) { // <-- Inyectado aquí
         this.estudianteRepository = estudianteRepository;
         this.cursoRepository = cursoRepository;
         this.evaluacionRepository = evaluacionRepository;
+        this.webClient = WebClient.builder()
+                .baseUrl(apiUrl)
+                .build();
     }
 
     @Override
@@ -68,7 +75,7 @@ public class InstitutoServiceImpl implements InstitutoService {
     }
 
     @Override
-    public Evaluacion setearNota(SetearNotaRequest request) {
+    public EvaluacionRequest setearNota(SetearNotaRequest request) {
         // Validar que existan el curso y el estudiante
         Curso curso = cursoRepository.findById(request.cursoId())
                 .orElseThrow(() -> new RuntimeException("Curso no encontrado con ID: " + request.cursoId()));
@@ -86,7 +93,32 @@ public class InstitutoServiceImpl implements InstitutoService {
         evaluacion.setFechaEvaluacion(request.fechaEvaluacion() != null ? request.fechaEvaluacion() : LocalDate.now());
         evaluacion.setObservaciones(request.observaciones());
 
-        return evaluacionRepository.save(evaluacion);
+        EvaluacionRequest dto = new EvaluacionRequest(
+                evaluacionRepository.save(evaluacion).getId(),
+                evaluacion.getEstudiante().getId(),
+                evaluacion.getEstudiante().getNombre(),
+                evaluacion.getNota(),
+                evaluacion.getObservaciones(),
+                evaluacion.getCurso().getId(),
+                evaluacion.getCurso().getNombre()
+        );
+
+        this.enviarEvaluacionAVectorStore(dto);
+        return dto;
+    }
+
+    @Async
+    protected void enviarEvaluacionAVectorStore(EvaluacionRequest evaluacion) {
+        //TODO Llamar de alguna forma asincronica (cola de mensajeria) al servicio de vectores para guardar registro
+        webClient.post()
+                .uri("/insert")
+                .bodyValue(evaluacion) // Usamos bodyValue para enviar el DTO directamente
+                .retrieve()
+                .toBodilessEntity()
+                .subscribe(
+                        response -> System.out.println("Enviado a VectorStore con éxito"),
+                        error -> System.err.println("Error enviando a VectorStore: " + error.getMessage())
+                );
     }
 
     @Override

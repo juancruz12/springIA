@@ -1,11 +1,6 @@
 package com.proyectoIA.springia.controller;
 
-import com.proyectoIA.springia.dto.CrearCursoRequest;
-import com.proyectoIA.springia.dto.CrearEstudianteRequest;
-import com.proyectoIA.springia.dto.EstudianteDto;
-import com.proyectoIA.springia.dto.FiltroEstudianteRequest;
-import com.proyectoIA.springia.dto.MensajeRespuesta;
-import com.proyectoIA.springia.dto.SetearNotaRequest;
+import com.proyectoIA.springia.dto.*;
 import com.proyectoIA.springia.entities.Curso;
 import com.proyectoIA.springia.entities.Estudiante;
 import com.proyectoIA.springia.entities.Evaluacion;
@@ -76,7 +71,7 @@ public class InstitutoController {
     @PostMapping("/evaluaciones")
     public ResponseEntity<MensajeRespuesta> setearNota(@RequestBody SetearNotaRequest request) {
         try {
-            Evaluacion evaluacion = institutoService.setearNota(request);
+            EvaluacionRequest evaluacion = institutoService.setearNota(request);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new MensajeRespuesta("Nota registrada exitosamente", evaluacion));
         } catch (Exception e) {
